@@ -83,6 +83,7 @@ namespace game
 	WEAK symbol<const char* (const XAsset* asset)> DB_GetXAssetName{ 0x1413E9DA0, 0x14019F080 };
 	WEAK symbol<bool(const char* zoneName, int source)> DB_FileExists{ 0x141420B40 };
 	WEAK symbol<void()> DB_ReleaseXAssets{ 0x1414247C0 };
+	WEAK symbol<XAssetList*(XAssetType type)> DB_GetXAssetList{0x141421160, 0x1401D5C40};
 
 	// G
 	WEAK symbol<void()> G_ClearVehicleInputs{ 0x1423812E0, 0x1405C1200 };

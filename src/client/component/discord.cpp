@@ -26,7 +26,7 @@ namespace discord
 			discord_presence.startTimestamp = time(0);
 			discord_presence.largeImageKey = "logo";
 			discord_presence.smallImageKey = "sexy";
-			discord_presence.details = "Playing BO3 via Ezz!";
+			discord_presence.details = "Playing CODR";
 
 			Discord_UpdatePresence(&discord_presence);
 		}

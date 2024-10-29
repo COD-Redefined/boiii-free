@@ -1996,7 +1996,30 @@ namespace game
 		XAssetHeader header;
 	};
 
+	struct XAssetList
+	{
+		int count;
+		XAsset* assets;
+	};
+
 	typedef void XAssetEnum(XAssetHeader, void*);
+
+	namespace game
+	{
+		typedef void (*XAssetEnum)(XAssetHeader header, void* data);
+
+		struct XAsset
+		{
+			XAssetType type;
+			XAssetHeader header;
+		};
+
+		struct XAssetList
+		{
+			int count;
+			XAsset* assets;
+		};
+	}
 
 #ifdef __cplusplus
 }

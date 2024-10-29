@@ -89,4 +89,5 @@ namespace game
 
 		return appdata_path;
 	}
+
 }
