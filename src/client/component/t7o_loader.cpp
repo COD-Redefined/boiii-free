@@ -9,13 +9,28 @@ namespace t7o
 {
     component::component()
     {
+        printf("[T7O] Loader component initialized\n");
         SetUnhandledExceptionFilter(dll_exception_handler);
     }
 
     void component::post_start()
     {
-        if (initialized_) return;
-        try_load_dll("plugins\\T7Overcharged.dll");
+        if (initialized_) 
+        {
+            printf("[T7O] Already initialized, skipping\n");
+            return;
+        }
+
+        printf("[T7O] Attempting to load T7Overcharged.dll...\n");
+        if (try_load_dll("plugins\\T7Overcharged.dll"))
+        {
+            printf("[T7O] Successfully loaded T7Overcharged.dll\n");
+            initialized_ = true;
+        }
+        else
+        {
+            printf("[T7O] Failed to load T7Overcharged.dll\n");
+        }
     }
 
     void component::post_load() {}
@@ -37,42 +52,21 @@ namespace t7o
 
     bool component::try_load_dll(const char* dll_name)
     {
+        printf("[T7O] Attempting to load DLL: %s\n", dll_name);
+        
         __try 
         {
-            printf("[T7O] Attempting to load %s\n", dll_name);
-            module_ = LoadLibraryA(dll_name);
-            
-            if (!module_)
+            HMODULE module = LoadLibraryA(dll_name);
+            if (!module)
             {
-                printf("[T7O] Failed to load %s (Error: %lu)\n", dll_name, GetLastError());
+                printf("[T7O] LoadLibraryA failed with error: %lu\n", GetLastError());
                 return false;
             }
-
-            using init_func_t = int(*)(void*);
-            auto init_func = reinterpret_cast<init_func_t>(GetProcAddress(module_, "init"));
-            if (!init_func)
-            {
-                printf("[T7O] Failed to find init function in %s\n", dll_name);
-                FreeLibrary(module_);
-                module_ = nullptr;
-                return false;
-            }
-
-            if (!init_func(nullptr))
-            {
-                printf("[T7O] Init function failed for %s\n", dll_name);
-                FreeLibrary(module_);
-                module_ = nullptr;
-                return false;
-            }
-
-            printf("[T7O] Successfully loaded and initialized %s\n", dll_name);
-            initialized_ = true;
             return true;
         }
         __except(dll_exception_handler(GetExceptionInformation()))
         {
-            printf("[T7O] Exception while loading %s\n", dll_name);
+            printf("[T7O] Exception while loading DLL\n");
             return false;
         }
     }
