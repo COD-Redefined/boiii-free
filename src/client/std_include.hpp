@@ -1,4 +1,5 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 
 #define BINARY_PAYLOAD_SIZE 0x14000000
 

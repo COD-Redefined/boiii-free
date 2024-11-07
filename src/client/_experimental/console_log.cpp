@@ -1,6 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <std_include.hpp>
 #include "console_log.hpp"
-#include "console.hpp"
+#include "component/console.hpp"
 #include "loader/component_loader.hpp"
 #include <utils/hook.hpp>
 #include <utils/string.hpp>
@@ -21,16 +23,13 @@ namespace console_log
 
         // Get current time
         const auto now = std::time(nullptr);
-        const auto tm = std::localtime(&now);
+        std::tm tm_buf;
+        localtime_s(&tm_buf, &now);
         
-        // Write timestamped message to file
-        if (tm)
-        {
-            char timestamp[32];
-            std::strftime(timestamp, sizeof(timestamp), "[%H:%M:%S] ", tm);
-            log_file << timestamp << message;
-            log_file.flush();
-        }
+        char timestamp[32];
+        std::strftime(timestamp, sizeof(timestamp), "[%H:%M:%S] ", &tm_buf);
+        log_file << timestamp << message << std::endl;
+        log_file.flush();
     }
 
     void component::post_unpack()
@@ -44,6 +43,18 @@ namespace console_log
         {
             log_file.close();
         }
+    }
+
+    void component::log_error(const std::string& error) {
+        message_interceptor("[ERROR] " + error);
+    }
+
+    void component::log_system(const std::string& system) {
+        message_interceptor("[SYSTEM] " + system);
+    }
+
+    void component::log_info(const std::string& info) {
+        message_interceptor("[INFO] " + info);
     }
 }
 

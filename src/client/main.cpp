@@ -15,6 +15,8 @@
 #include "launcher/launcher.hpp"
 #include "component/updater.hpp"
 
+#include "_experimental/console_log.hpp"
+
 namespace
 {
 	volatile bool g_call_tls_callbacks = false;
@@ -265,6 +267,7 @@ int main()
 
 	{
 		auto premature_shutdown = true;
+		console_log::component::message_interceptor("BOIII Startup - Process ID: " + std::to_string(GetCurrentProcessId()));
 		const auto _ = utils::finally([&premature_shutdown]
 		{
 			if (premature_shutdown)
@@ -275,9 +278,15 @@ int main()
 
 		try
 		{
+			console_log::component::message_interceptor("[SYSTEM] Validating installation path...");
+			console_log::component::message_interceptor("[SYSTEM] Checking for crash files...");
+			console_log::component::message_interceptor("[SYSTEM] Running updater...");
+
 			validate_non_network_share();
 			remove_crash_file();
 			updater::update();
+
+			console_log::component::message_interceptor("[SYSTEM] Checking launcher UI files...");
 
 			if (!utils::io::file_exists(launcher::get_launcher_ui_file().generic_wstring()))
 			{
@@ -291,9 +300,13 @@ int main()
 			const auto has_server = utils::io::file_exists(server_binary);
 
 			const auto is_server = utils::flags::has_flag("dedicated") || (!has_client && has_server);
+			console_log::component::message_interceptor("[SYSTEM] Checking game executables...");
+
+
 
 			if (!has_client && !has_server)
 			{
+				console_log::component::message_interceptor("[ERROR] Missing game executables");
 				throw std::runtime_error(
 					"Can't find a valid BlackOps3.exe or BlackOps3_UnrankedDedicatedServer.exe. Make sure you put boiii.exe in your Black Ops 3 installation folder.");
 			}
@@ -329,6 +342,7 @@ int main()
 			{
 				if (game::is_legacy_client())
 				{
+					console_log::component::message_interceptor("[SYSTEM] Loading binary into memory...");
 					throw std::runtime_error(
 						"You are using the outdated BlackOps3.exe. This version is not supported anymore. Please use the latest binary from Steam.");
 				}
@@ -336,6 +350,7 @@ int main()
 				throw std::runtime_error("Bad binary loaded into memory");
 			}
 
+			console_log::component::message_interceptor("[SYSTEM] Patching imports...");
 			patch_imports();
 
 			if (!component_loader::post_load())
@@ -359,4 +374,18 @@ int main()
 int __stdcall WinMain(HINSTANCE, HINSTANCE, PSTR, int)
 {
 	return main();
+}
+
+BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID)
+{
+	if (reason == DLL_PROCESS_ATTACH)
+	{
+		console_log::component::log_system("DLL_PROCESS_ATTACH triggered");
+	}
+	else if (reason == DLL_PROCESS_DETACH) 
+	{
+		console_log::component::log_system("DLL_PROCESS_DETACH triggered");
+	}
+	
+	return TRUE;
 }

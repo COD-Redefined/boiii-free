@@ -2024,3 +2024,33 @@ namespace game
 #ifdef __cplusplus
 }
 #endif
+
+struct AssetLink
+{
+    AssetLink* next;
+};
+
+struct XAssetPool
+{
+    void* pool;
+    unsigned int itemSize;
+    int itemCount;
+    bool isSingleton[4];
+    int itemAllocCount;
+    AssetLink* freeHead;
+};
+
+struct LinkedListEntry
+{
+    LinkedListEntry* next;
+};
+
+struct XAsset 
+{
+    void* firstEntry;
+    int size;
+    int maximum;
+    bool isSingleton[4];
+    int count;
+    void* entries;
+};

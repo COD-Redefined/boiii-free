@@ -1,9 +1,11 @@
 #include <std_include.hpp>
 #include "component_loader.hpp"
+#include "havok/hks_api.hpp"
+#include "game/game.hpp"
+#include "utils/string.hpp"
+#include "../_experimental/console_log.hpp"
 
 #include <utils/nt.hpp>
-
-#include "game/game.hpp"
 
 namespace component_loader
 {
@@ -33,7 +35,8 @@ namespace component_loader
 
 		void activate_component(std::unique_ptr<generic_component> component)
 		{
-			auto& components = get_components();
+			console_log::component::log_info("Loading components...");
+    		auto& components = get_components();
 			components.push_back(std::move(component));
 
 			std::ranges::stable_sort(components, [](const std::unique_ptr<generic_component>& a,
@@ -166,5 +169,16 @@ namespace component_loader
 	void trigger_premature_shutdown()
 	{
 		throw premature_shutdown_trigger();
+	}
+
+	void post_start()
+	{
+		console_log::component::log_info("Starting component post-initialization...");
+		
+		for (const auto& component : get_components())
+		{
+			console_log::component::log_info("Starting component");
+			component->post_start();
+		}
 	}
 }

@@ -1,14 +1,15 @@
 #pragma once
+#include <memory>
 
 class component_interface
 {
 public:
     virtual ~component_interface() = default;
-    virtual void post_start() {}
-    virtual void lua_start() {}
-    virtual void pre_destroy() {}
-    virtual void start_hooks() {}
-    virtual void destroy_hooks() {}
+    virtual void post_start() = 0;
+    virtual void lua_start() = 0;
+    virtual void pre_destroy() = 0;
+    virtual void start_hooks() = 0;
+    virtual void destroy_hooks() = 0;
 };
 
 enum class component_priority
@@ -30,17 +31,19 @@ enum class component_type
 	any,
 };
 
-struct generic_component
+struct generic_component : public component_interface
 {
 	static constexpr component_type type = component_type::any;
 
 	virtual ~generic_component() = default;
 
-	virtual void post_load()
-	{
-	}
+	virtual void post_start() override {}
+	virtual void lua_start() override {}
+	virtual void pre_destroy() override {}
+	virtual void start_hooks() override {}
+	virtual void destroy_hooks() override {}
 
-	virtual void pre_destroy()
+	virtual void post_load()
 	{
 	}
 

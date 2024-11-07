@@ -4,6 +4,8 @@
 
 #include <utils/hook.hpp>
 #include <utils/string.hpp>
+#include "../_experimental/console_log.hpp"
+//#include "console.hpp"
 
 namespace dedicated_patches
 {
@@ -89,11 +91,22 @@ namespace dedicated_patches
 		}
 	}
 
-	struct component final : server_component
+	class component final : public server_component
 	{
-
+	public:
 		void post_unpack() override
 		{
+			console_log::component::log_info("Initializing dedicated patches component...");
+    
+			// Log each major hook installation
+			console_log::component::log_info("Installing online mode hooks...");
+			utils::hook::jump(0x1405003B0_g, get_online_mode_stub);
+			
+			console_log::component::log_info("Patching mod loaded checks...");
+			patch_is_mod_loaded_checks();
+			
+			console_log::component::log_info("Creating server spawn hook...");
+			spawn_server_hook.create(game::SV_SpawnServer, spawn_server_stub);
 			// Fix infinite loop
 			utils::hook::jump(0x1402E86B0_g, scr_are_textures_loaded_stub);
 
