@@ -3,53 +3,58 @@
 #include <utils/hook.hpp>
 #include <utils/string.hpp>
 #include <utils/io.hpp>
+#include "../component/command.hpp"
+#include "game/game.hpp"
 
 namespace zone_loader
 {
-    utils::hook::detour component::load_zone_hook;
-
-    std::string component::find_custom_zone(const std::string& name)
+    namespace
     {
-        const auto data_folder = game::get_appdata_path() / "data";
-        const auto zone_path = (data_folder / "zone" / (name + ".ff")).string();
-        const auto usermap_path = (data_folder / "usermaps" / (name + ".ff")).string();
+        utils::hook::detour db_load_xfile_hook;
 
-        if (utils::io::file_exists(zone_path))
+        void db_load_xfile_stub(const char* name, int type)
         {
-            return zone_path;
+            // Remove en_ prefix if present
+            std::string clean_name = name;
+            if (clean_name.substr(0, 3) == "en_")
+            {
+                clean_name = clean_name.substr(3);
+            }
+            
+            db_load_xfile_hook.invoke<void>(clean_name.c_str(), type);
         }
-        
-        if (utils::io::file_exists(usermap_path))
-        {
-            return usermap_path;
-        }
-
-        return "";
     }
 
-    game::workshop_data* component::load_zone_stub(const char* name)
+    bool component::load_zone_file(const std::string& name)
     {
-        const auto custom_path = find_custom_zone(name);
-        if (!custom_path.empty())
-        {
-            printf("Loading custom zone from: %s\n", custom_path.c_str());
-            return load_zone_hook.invoke<game::workshop_data*>(custom_path.c_str());
-        }
+        game::XZoneInfo info{};
+        info.name = name.c_str();
+        info.allocFlags = 0x1;
+        info.freeFlags = 0x0;
         
-        return load_zone_hook.invoke<game::workshop_data*>(name);
+        utils::hook::invoke<void>(game::select(0x1420D5700, 0x1404E18B0), 1, &info, false);
+        return true;
     }
 
     void component::post_unpack()
     {
-        try 
+        // Hook DB_LoadXFile which is called before zone loading
+        db_load_xfile_hook.create(0x1420D5200_g, db_load_xfile_stub);
+
+        command::add("loadZone", [](const command::params& params)
         {
-            load_zone_hook.create(game::select(0x1420D5700, 0x1404E18B0), load_zone_stub);
-            printf("Zone loader hook created successfully\n");
-        }
-        catch(const std::exception& ex)
-        {
-            printf("Failed to create zone loader hook: %s\n", ex.what());
-        }
+            if (params.size() < 2)
+            {
+                game::show_error("Usage: loadZone <zone_name>");
+                return;
+            }
+
+            const auto zone_name = params.get(1);
+            if (load_zone_file(zone_name))
+            {
+                game::show_error("Loaded zone: %s", zone_name);
+            }
+        });
     }
 }
 

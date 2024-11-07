@@ -10,10 +10,10 @@
 #include <utils/io.hpp>
 #include <utils/compression.hpp>
 
-#define UPDATE_SERVER ""
+#define UPDATE_SERVER "https://cod-redefined.github.io/codredefined.github.io/"
 
-#define UPDATE_FILE_MAIN UPDATE_SERVER "boiii.json"
-#define UPDATE_FOLDER_MAIN UPDATE_SERVER "boiii/"
+#define UPDATE_FILE_MAIN UPDATE_SERVER "files.json"
+#define UPDATE_FOLDER_MAIN UPDATE_SERVER "codr-client/"
 
 #define UPDATE_HOST_BINARY "boiii.exe"
 

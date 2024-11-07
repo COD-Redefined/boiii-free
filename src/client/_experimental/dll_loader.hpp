@@ -1,5 +1,5 @@
 #pragma once
-#include "loader/component_interface.hpp"
+#include "loader/component_loader.hpp"
 #include <Windows.h>
 
 namespace t7o
@@ -8,22 +8,13 @@ namespace t7o
     {
     public:
         component();
-        
-        void post_start() override;
-        void lua_start() override;
-        void pre_destroy() override;
-        void start_hooks() override;
-        void destroy_hooks() override;
-        void post_load() override;
         void post_unpack() override;
+        void post_load() override;
+        void pre_destroy() override;
 
         component_priority priority() const override
         {
             return component_priority::min;
         }
-
-    private:
-        HMODULE module_{nullptr};
-        bool initialized_{false};
     };
 }
